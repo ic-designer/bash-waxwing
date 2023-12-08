@@ -59,7 +59,7 @@
     }
 
     function waxwing::discover_test_funcs() {
-        echo $(declare -F | grep -oP '(?<= )test_.*$')
+        echo $(declare -f | grep -o '^test\w*')
     }
 
     if [[ "${BASH_SOURCE[0]}" == "${0}" ]]; then
