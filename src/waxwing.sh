@@ -38,7 +38,6 @@
                 for testname in ${test_list}; do
                     local return_code=0
                     (
-                        # set -euo pipefail
                         ${testname} >/dev/null 2>&1
                     ) || return_code=1
 
@@ -46,6 +45,9 @@
                         echo -e "\e[1;32mPassed: ${testname}\e[0m"
                     else
                         echo -e "\e[1;31mFailed: ${testname}\e[0m"
+                        (
+                            ${testname}
+                        )
                         exit 1
                     fi
                 done
