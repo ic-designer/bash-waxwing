@@ -42,9 +42,9 @@
                     ) || return_code=1
 
                     if [[ $return_code == 0 ]]; then
-                        echo -e "\e[1;32mPassed: ${testname}\e[0m"
+                        printf "\e[1;32mPassed: ${testname}\e[0m\n"
                     else
-                        echo -e "\e[1;31mFailed: ${testname}\e[0m"
+                        printf "\e[1;31mFailed: ${testname}\e[0m\n"
                         (
                             ${testname}
                         )
