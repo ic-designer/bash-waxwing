@@ -19,7 +19,7 @@
                 export PATH=${caller_dir}:$PATH
                 export PS4='${BASH_SOURCE}:${LINENO}: '
                 exec 3>${__FILENAME_TRACE__} && BASH_XTRACEFD=3
-                set -euxTo pipefail -o functrace
+                set -euTo pipefail -o functrace
                 echo -e "Working Path: $(realpath ${caller_dir})\n"
 
                 echo $caller_dir/$@
@@ -46,6 +46,7 @@
                     else
                         printf "\e[1;31mFailed: ${testname}\e[0m\n"
                         (
+                            set -x
                             ${testname}
                         )
                         exit 1
