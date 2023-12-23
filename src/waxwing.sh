@@ -19,38 +19,51 @@
                 export PATH=${caller_dir}:$PATH
                 export PS4='${BASH_SOURCE}:${LINENO}: '
                 exec 3>${__FILENAME_TRACE__} && BASH_XTRACEFD=3
+
                 set -euTo pipefail -o functrace
-                echo -e "Working Path: $(realpath ${caller_dir})\n"
+                echo "Working Path:  $(realpath ${caller_dir})"
+                echo "Search Path:   $(realpath ${caller_dir}/${@})"
+                echo ""
 
-                echo $caller_dir/$@
 
-                for test_file in $(waxwing::discover_test_files ${caller_dir} $@); do
-                    . ${test_file}
-                done
-
-                local test_list=$(waxwing::discover_test_funcs)
                 echo "Discovered Tests"
-                for testname in ${test_list}; do
-                    echo "    ${testname}"
+                local collection_test_files=$(waxwing::discover_test_files ${caller_dir} $@)
+                for test_file in ${collection_test_files}; do
+                    (
+                        . ${test_file}
+                        echo "    ${test_file#"${caller_dir}/"}"
+                        local collection_test_names=$(waxwing::discover_test_funcs)
+                        for test_name in ${collection_test_names}; do
+                            echo "        ${test_name}"
+                        done
+                    )
                 done
                 echo
 
-                for testname in ${test_list}; do
-                    local return_code=0
-                    (
-                        ${testname} >/dev/null 2>&1
-                    ) || return_code=1
 
-                    if [[ $return_code == 0 ]]; then
-                        printf "\e[1;32mPassed: ${testname}\e[0m\n"
-                    else
-                        printf "\e[1;31mFailed: ${testname}\e[0m\n"
-                        (
-                            set -x
-                            ${testname}
-                        )
-                        exit 1
-                    fi
+                for test_file in ${collection_test_files}; do
+                    (
+                        . ${test_file}
+                        local collection_test_names=$(waxwing::discover_test_funcs)
+                        for test_name in ${collection_test_names}; do
+                            local return_code=0
+                            (
+                                ${test_name} >/dev/null 2>&1
+                            ) || return_code=1
+
+                            local test_id="${test_file#"${caller_dir}/"}::${test_name}"
+                            if [[ $return_code == 0 ]]; then
+                                printf "\e[1;32mPassed: ${test_id}\e[0m\n"
+                            else
+                                printf "\e[1;31mFailed: ${test_id}\e[0m\n"
+                                (
+                                    set -x
+                                    ${test_name}
+                                )
+                                exit 1
+                            fi
+                        done
+                    )
                 done
 
             ) | 2>&1 tee ${__FILENAME_LOG__}
