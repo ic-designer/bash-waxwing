@@ -59,7 +59,8 @@
                                 (
                                     set -x
                                     ${test_name}
-                                )
+                                ) || true
+                                printf "\e[1;31mFailed: ${test_id}\e[0m\n"
                                 exit 1
                             fi
                         done
