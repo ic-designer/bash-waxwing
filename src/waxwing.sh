@@ -20,11 +20,11 @@ function waxwing::write_pipe() {
     if [[ ! -f $pipe ]]; then
         command \trap "waxwing::clean_pipe" INT TERM EXIT
     fi
-    echo "$@" >>$pipe
+    echo -e "${@//\\/}" >>$pipe
 }
 
 function waxwing::read_pipe() {
-    contents=$(cat $pipe)
+    contents="$(cat -v $pipe)"
     waxwing::clean_pipe
     echo -e "${contents}"
 }
