@@ -80,8 +80,8 @@ function waxwing::read_pipe() {
                             set +e
                             (
                                 set -e
-                                ${test_name} >/dev/null 2>&1
-                            )
+                                ${test_name}
+                            )  >/dev/null 2>&1
                             return_code=$?
 
                             local test_id="${test_file#"${caller_dir}/"}::${test_name}"
