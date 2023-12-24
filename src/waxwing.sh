@@ -47,19 +47,23 @@
                         local collection_test_names=$(waxwing::discover_test_funcs)
                         for test_name in ${collection_test_names}; do
                             local return_code=0
+                            set +e
                             (
+                                set -e
                                 ${test_name} >/dev/null 2>&1
-                            ) || return_code=1
+                            )
+                            return_code=$?
 
                             local test_id="${test_file#"${caller_dir}/"}::${test_name}"
                             if [[ $return_code == 0 ]]; then
                                 printf "\e[1;32mPassed: ${test_id}\e[0m\n"
                             else
                                 printf "\e[1;31mFailed: ${test_id}\e[0m\n"
+                                set +e
                                 (
-                                    set -x
+                                    set -ex
                                     ${test_name}
-                                ) || true
+                                )
                                 printf "\e[1;31mFailed: ${test_id}\e[0m\n"
                                 exit 1
                             fi
