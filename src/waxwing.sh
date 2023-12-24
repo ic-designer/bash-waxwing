@@ -1,4 +1,34 @@
 #!/usr/bin/env bash
+function waxwing::monkey_patch_commands_to_record_command_name_only() {
+    for func_name in $@; do
+        eval "function ${func_name}() { waxwing::write_pipe ${func_name}; }"
+    done
+}
+
+function waxwing::monkey_patch_commands_to_record_command_name_and_args() {
+    for func_name in $@; do
+        eval "function ${func_name}() { waxwing::write_pipe ${func_name} "\$@"; }"
+    done
+}
+
+pipe=waxwing.pipe
+function waxwing::clean_pipe() {
+    command \rm -f $pipe
+}
+
+function waxwing::write_pipe() {
+    if [[ ! -f $pipe ]]; then
+        command \trap "waxwing::clean_pipe" INT TERM EXIT
+    fi
+    echo "$@" >>$pipe
+}
+
+function waxwing::read_pipe() {
+    contents=$(cat $pipe)
+    waxwing::clean_pipe
+    echo -e "${contents}"
+}
+
 (
     set -euo pipefail
     __PROG__=waxwing
