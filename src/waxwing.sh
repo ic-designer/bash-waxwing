@@ -3,23 +3,25 @@
 function waxwing::monkey_patch_commands_to_record_command_name_only() {
     for func_name in $@; do
         eval "function ${func_name}() { waxwing::write_pipe ${func_name}; }"
+        export -f ${func_name}
     done
 }
 
 function waxwing::monkey_patch_commands_to_record_command_name_and_args() {
     for func_name in $@; do
         eval "function ${func_name}() { waxwing::write_pipe ${func_name} "\$@"; }"
+        export -f ${func_name}
     done
 }
 
-pipe=waxwing.pipe
+export pipe=waxwing.pipe
 function waxwing::clean_pipe() {
     command \rm -f $pipe
 }
 
 function waxwing::write_pipe() {
     if [[ ! -f $pipe ]]; then
-        command \trap "waxwing::clean_pipe" INT TERM EXIT
+        command \trap "waxwing::clean_pipe" INT TERM
     fi
     echo -e "${@//\\/}" >>$pipe
 }
@@ -29,6 +31,15 @@ function waxwing::read_pipe() {
     waxwing::clean_pipe
     echo -e "${contents}"
 }
+
+function waxwing::export_helper_functions() {
+    export -f waxwing::monkey_patch_commands_to_record_command_name_only
+    export -f waxwing::monkey_patch_commands_to_record_command_name_and_args
+    export -f waxwing::clean_pipe
+    export -f waxwing::write_pipe
+    export -f waxwing::read_pipe
+}
+
 
 (
     set -euo pipefail
@@ -80,6 +91,7 @@ function waxwing::read_pipe() {
                             local return_code=0
                             set +e
                             (
+                                waxwing::export_helper_functions
                                 set -e
                                 ${test_name}
                             )  >/dev/null 2>&1
@@ -90,9 +102,11 @@ function waxwing::read_pipe() {
                                 printf "\e[1;32mPassed: ${test_id}\e[0m\n"
                             else
                                 printf "\e[1;31mFailed: ${test_id}\e[0m\n"
+                                printf "Working directory: $(pwd)\n\n"
                                 set +e
                                 (
-                                    set -ex
+                                    waxwing::export_helper_functions
+                                    set -exT
                                     ${test_name}
                                 )
                                 printf "\e[1;31mFailed: ${test_id}\e[0m\n"
