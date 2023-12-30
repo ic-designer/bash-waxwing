@@ -1,4 +1,5 @@
 #!/usr/bin/env bash
+
 function waxwing::monkey_patch_commands_to_record_command_name_only() {
     for func_name in $@; do
         eval "function ${func_name}() { waxwing::write_pipe ${func_name}; }"
