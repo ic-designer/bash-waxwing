@@ -63,8 +63,8 @@ function waxwing::export_helper_functions() {
                 exec 3>${__FILENAME_TRACE__} && BASH_XTRACEFD=3
 
                 set -euTo pipefail -o functrace
-                echo "Working Path:  $(realpath ${caller_dir})"
-                echo "Search Path:   $(realpath ${caller_dir}/${@})"
+                echo "Working Path:  $(cd ${caller_dir} && echo $(pwd))"
+                echo "Search Path:   $(cd ${caller_dir}/${@} && echo $(pwd))"
                 echo ""
 
 
