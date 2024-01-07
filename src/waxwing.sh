@@ -56,6 +56,9 @@ function waxwing::export_helper_functions() {
         \mkdir -p ${__WORKDIR__}
         (
             local caller_dir=$(pwd)
+            local workdir="$(cd ${__WORKDIR__} && echo $(pwd))"
+            local searchdir="$(cd $@ && echo $(pwd))"
+
             cd ${__WORKDIR__}
             (
                 export PATH=${caller_dir}:$PATH
@@ -63,13 +66,13 @@ function waxwing::export_helper_functions() {
                 exec 3>${__FILENAME_TRACE__} && BASH_XTRACEFD=3
 
                 set -euTo pipefail -o functrace
-                echo "Working Path:  $(cd ${caller_dir} && echo $(pwd))"
-                echo "Search Path:   $(cd ${caller_dir}/${@} && echo $(pwd))"
+                echo "Working Path:  ${workdir}"
+                echo "Search Path:   ${searchdir}"
                 echo ""
 
 
                 echo "Discovered Tests"
-                local collection_test_files=$(waxwing::discover_test_files ${caller_dir} $@)
+                local collection_test_files=$(waxwing::discover_test_files ${searchdir})
                 for test_file in ${collection_test_files}; do
                     (
                         . ${test_file}
@@ -121,7 +124,7 @@ function waxwing::export_helper_functions() {
     }
 
     function waxwing::discover_test_files() {
-        echo $(find $1/$2 -type f -name "test*.sh")
+        echo $(find $1 -type f -name "test*.sh")
     }
 
     function waxwing::discover_test_funcs() {
