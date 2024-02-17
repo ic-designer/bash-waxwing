@@ -62,7 +62,7 @@ function waxwing::export_helper_functions() {
             cd ${__WORKDIR__}
             (
                 export PATH=${caller_dir}:$PATH
-                export PS4='${BASH_SOURCE}:${LINENO}: '
+                export PS4='$(basename ${BASH_SOURCE}):${LINENO}: '
                 exec 3>${__FILENAME_TRACE__} && BASH_XTRACEFD=3
 
                 set -euTo pipefail -o functrace
