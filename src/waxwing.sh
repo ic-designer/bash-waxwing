@@ -47,6 +47,7 @@ function waxwing::export_helper_functions() {
 
 
     WORKDIR=".${NAME}"
+    WORKDIR_CACHE=".cache"
     FILENAME_LOG="${NAME}.log"
     FILENAME_TRACE="${NAME}.trace"
 
@@ -85,21 +86,23 @@ function waxwing::export_helper_functions() {
                 done
                 echo
 
-
                 for test_file in ${collection_test_files}; do
                     (
                         . ${test_file}
                         local collection_test_names=$(waxwing::discover_test_funcs)
                         for test_name in ${collection_test_names}; do
+                            local shell_opts=$(set +o); [[ -o errexit ]] && shell_opts="${shell_opts}; set -e"
+                            \rm -rf ${WORKDIR_CACHE}/${test_file}/${test_name}
+                            mkdir -p ${WORKDIR_CACHE}/${test_file}/${test_name}
                             local return_code=0
-                            set +e
+                            set +e -xT
                             (
+                                cd ${WORKDIR_CACHE}/${test_file}/${test_name}
                                 waxwing::export_helper_functions
-                                set -e
                                 waxwing::clean_pipe
                                 ${test_name}
-                            )  >/dev/null 2>&1
-                            return_code=$?
+                            ) >${WORKDIR_CACHE}/${test_file}/${test_name}/${test_name}.log 2>&1 || return_code=1
+                            { eval "${shell_opts}";} 2> /dev/null
 
                             local test_id="${test_file#"${caller_dir}/"}::${test_name}"
                             if [[ $return_code == 0 ]]; then
@@ -107,12 +110,13 @@ function waxwing::export_helper_functions() {
                             else
                                 printf "\e[1;31mFailed: ${test_id}\e[0m\n"
                                 printf "Working directory: $(pwd)\n\n"
-                                set +e
+                                set -exT
                                 (
+                                    cd ${WORKDIR_CACHE}/${test_file}/${test_name}
                                     waxwing::export_helper_functions
-                                    set -exT
+                                    waxwing::clean_pipe
                                     ${test_name}
-                                )
+                                ) || true
                                 printf "\e[1;31mFailed: ${test_id}\e[0m\n"
                                 exit 1
                             fi
