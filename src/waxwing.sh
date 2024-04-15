@@ -44,8 +44,6 @@ function waxwing::export_helper_functions() {
 (
     set -euo pipefail
     NAME=waxwing
-
-
     WORKDIR=".${NAME}"
     WORKDIR_CACHE=".cache"
     FILENAME_LOG="${NAME}.log"
@@ -66,7 +64,6 @@ function waxwing::export_helper_functions() {
                 export PS4='$(basename ${BASH_SOURCE}):${LINENO}: '
                 exec 3>${FILENAME_TRACE} && BASH_XTRACEFD=3
 
-                set -euTo pipefail -o functrace
                 echo "Working Path:  ${workdir}"
                 echo "Search Path:   ${searchdir}"
                 echo ""
