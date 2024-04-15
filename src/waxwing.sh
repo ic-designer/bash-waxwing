@@ -43,27 +43,27 @@ function waxwing::export_helper_functions() {
 
 (
     set -euo pipefail
-    __PROG__=waxwing
+    NAME=waxwing
 
 
-    __WORKDIR__=".${__PROG__}"
-    __FILENAME_LOG__="${__PROG__}.log"
-    __FILENAME_TRACE__="${__PROG__}.trace"
+    WORKDIR=".${NAME}"
+    FILENAME_LOG="${NAME}.log"
+    FILENAME_TRACE="${NAME}.trace"
 
 
     function waxwing::__main__() {
 
-        \mkdir -p ${__WORKDIR__}
+        \mkdir -p ${WORKDIR}
         (
             local caller_dir=$(pwd)
-            local workdir="$(cd ${__WORKDIR__} && echo $(pwd))"
+            local workdir="$(cd ${WORKDIR} && echo $(pwd))"
             local searchdir="$(cd $@ && echo $(pwd))"
 
-            cd ${__WORKDIR__}
+            cd ${WORKDIR}
             (
                 export PATH=${caller_dir}:$PATH
                 export PS4='$(basename ${BASH_SOURCE}):${LINENO}: '
-                exec 3>${__FILENAME_TRACE__} && BASH_XTRACEFD=3
+                exec 3>${FILENAME_TRACE} && BASH_XTRACEFD=3
 
                 set -euTo pipefail -o functrace
                 echo "Working Path:  ${workdir}"
@@ -118,8 +118,7 @@ function waxwing::export_helper_functions() {
                         done
                     )
                 done
-
-            ) | 2>&1 tee ${__FILENAME_LOG__}
+            ) | 2>&1 tee ${FILENAME_LOG}
         )
     }
 
