@@ -96,6 +96,7 @@ function waxwing::export_helper_functions() {
                             (
                                 waxwing::export_helper_functions
                                 set -e
+                                waxwing::clean_pipe
                                 ${test_name}
                             )  >/dev/null 2>&1
                             return_code=$?
