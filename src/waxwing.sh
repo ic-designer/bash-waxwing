@@ -88,40 +88,43 @@ function waxwing::export_helper_functions() {
                         . ${test_file}
                         local collection_test_names=$(waxwing::discover_test_funcs)
                         for test_name in ${collection_test_names}; do
-                            local shell_opts=$(set +o); [[ -o errexit ]] && shell_opts="${shell_opts}; set -e"
-                            \rm -rf ${WORKDIR_CACHE}/${test_file}/${test_name}
-                            mkdir -p ${WORKDIR_CACHE}/${test_file}/${test_name}
-                            local return_code=0
-                            set +e -xT
                             (
-                                cd ${WORKDIR_CACHE}/${test_file}/${test_name}
-                                waxwing::export_helper_functions
-                                waxwing::clean_pipe
-                                ${test_name}
-                            ) >${WORKDIR_CACHE}/${test_file}/${test_name}/${test_name}.log 2>&1 || return_code=1
-                            { eval "${shell_opts}";} 2> /dev/null
-
-                            local test_id="${test_file#"${caller_dir}/"}::${test_name}"
-                            if [[ $return_code == 0 ]]; then
-                                printf "\e[1;32mPassed: ${test_id}\e[0m\n"
-                            else
-                                printf "\e[1;31mFailed: ${test_id}\e[0m\n"
-                                printf "Working directory: $(pwd)\n\n"
-                                set -exT
+                                local shell_opts=$(set +o); [[ -o errexit ]] && shell_opts="${shell_opts}; set -e"
+                                \rm -rf ${WORKDIR_CACHE}/${test_file}/${test_name}
+                                mkdir -p ${WORKDIR_CACHE}/${test_file}/${test_name}
+                                local return_code=0
+                                set +e -xT
                                 (
                                     cd ${WORKDIR_CACHE}/${test_file}/${test_name}
                                     waxwing::export_helper_functions
                                     waxwing::clean_pipe
                                     ${test_name}
-                                ) || true
-                                printf "\e[1;31mFailed: ${test_id}\e[0m\n"
-                                exit 1
-                            fi
+                                ) >${WORKDIR_CACHE}/${test_file}/${test_name}/${test_name}.log 2>&1 || return_code=1
+                                { eval "${shell_opts}";} 2> /dev/null
+
+                                local test_id="${test_file#"${caller_dir}/"}::${test_name}"
+                                if [[ $return_code == 0 ]]; then
+                                    printf "\e[1;32mPassed: ${test_id}\e[0m\n"
+                                else
+                                    printf "\e[1;31mFailed: ${test_id}\e[0m\n"
+                                    printf "Working directory: $(pwd)\n\n"
+                                    set -exT
+                                    (
+                                        cd ${WORKDIR_CACHE}/${test_file}/${test_name}
+                                        waxwing::export_helper_functions
+                                        waxwing::clean_pipe
+                                        ${test_name}
+                                    ) || true
+                                    printf "\e[1;31mFailed: ${test_id}\e[0m\n"
+                                    exit 1
+                                fi
+                            ) &
                         done
                     )
                 done
             ) | 2>&1 tee ${FILENAME_LOG}
         )
+        wait
     }
 
     function waxwing::discover_test_files() {
